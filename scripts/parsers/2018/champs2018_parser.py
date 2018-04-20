@@ -3,6 +3,10 @@ from parsers.champsparser import *
 PATH = '../../../data/2018'
 champs_parser = ResultParser(f'{PATH}/raw/champs18.txt')
 champs_records = champs_parser.get_records()
+champs_records.loc[champs_records.Team=='Holmwood','Team'] = 'Holmwood Technical High'
+champs_records.loc[champs_records.Team=='Herbert Morr','Team'] = 'Herbert Morrison'
+champs_records.loc[champs_records.Team=="Wolmer's",'Team'] = "Wolmer's High School"
+champs_records.loc[champs_records.Team=="Immaculate",'Team'] = "Immaculate Conception High"
 champs_records.to_csv(f'{PATH}/Champs2018.csv', index=False)
 print(champs_records)
 
