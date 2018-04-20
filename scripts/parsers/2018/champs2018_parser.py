@@ -1,7 +1,7 @@
 from parsers.champsparser import *
 
 PATH = '../../../data/2018'
-champs_parser = ResultParser(f'{PATH}/raw/champs18.txt', event_parser= [eventParser, placing_parser, relay_placing_parser, roundParser])
+champs_parser = ResultParser(f'{PATH}/raw/champs18.txt')
 champs_records = champs_parser.get_records()
 champs_records.to_csv(f'{PATH}/Champs2018.csv', index=False)
 print(champs_records)
@@ -13,6 +13,6 @@ boys_scoreboard.index = boys_scoreboard.index +1
 girls_scoreboard = scoreboard[scoreboard.Gender=='Girls'].sort_values(['Points','Team'], ascending=[False,True]).reset_index(drop=True)[['Team','Points']]
 girls_scoreboard.index = girls_scoreboard.index +1
 
-boys_scoreboard.to_csv(f'{PATH}/Champs2018BoysPoints.csv', index=False)
-girls_scoreboard.to_csv(f'{PATH}/Champs2018GirlsPoints.csv')
+boys_scoreboard.to_csv(f'{PATH}/BoysScoreboard.csv', index=False)
+girls_scoreboard.to_csv(f'{PATH}/GirlsScoreboard.csv', index=False)
 

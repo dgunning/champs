@@ -1,6 +1,7 @@
 import re
 import pandas as pd
 
+
 def regex_choices(options, brackets=True):
     opts ='|'.join(options)
     return f'({opts})' if brackets else opts
@@ -95,7 +96,7 @@ placing_parser = LineParser(' *RANK COMP_NUM PERSON {2,}SCHOOL {2,}MARK( {1,}WIN
 
 relay_placing_parser = LineParser(' *RANK SCHOOL {4,}MARK( {2,8}POINTS)?',
                         lambda match: {'Rank': match.group(1), 'Team': match.group(2),
-                                       'Mark': match.group(7), 'Points': match.group(15)})
+                                        'Mark': match.group(7), 'Points': match.group(15)})
 
 eventParser = LineParser('Event [0-9]{1,3} *GENDER [0-9]{1,2}\-[0-9]{1,2} EVENT *CLASS',
                          lambda match: {'Gender': match.group(1), 'Event':match.group(2), 'Class': match.group(5).title()})
@@ -106,7 +107,7 @@ relay_leg34_parser = LineParser(RELAY_LEG_34, lambda match: {'Leg3':trim(match.g
 roundParser = LineParser('ROUND',
                          lambda match: {'Round': match.group(3)})
 
-COLS = ['Gender','Class','Event','Round','Rank','Athlete','Team','Mark','Points','Wind', 'Leg1', 'Leg2', 'Leg3', 'Leg4']
+COLS = ['Gender','Class','Event','Round','Rank','Athlete','Team','Mark','DQRule','Points','Wind', 'Leg1', 'Leg2', 'Leg3', 'Leg4']
 
 
 class ResultParser:
@@ -165,7 +166,9 @@ class ResultParser:
         data = pd.DataFrame(records)
         data.Points = data.Points.fillna(0).astype(float)
         data.Team = data.Team.apply(lambda s: s.strip())
-        #data.Wind = data.Wind.apply(trim)
+
+        data['DQRule'] = data.Mark.apply(lambda mark: mark[3:].strip() if mark.startswith('DQ') else mark)
+        data['Mark'] = data.Mark.apply(lambda mark: 'DQ' if mark.startswith('DQ') else mark)
 
         # Decathlon & Heptathlon
         dec_hep_cond=data.Class.isin(['Decathlon','Heptathlon'])
