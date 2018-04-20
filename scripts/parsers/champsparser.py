@@ -20,6 +20,7 @@ def get_lines(data_file):
 def trim(string, value_if_none=None):
     return string.strip() if string else value_if_none
 
+LEGS = ['Leg1','Leg2','Leg3','Leg4']
 
 EVENT= regex_choices( [
     '[0-9]{,5} Meter (Dash|Run|Hurdles|Steeplechase)',
@@ -39,7 +40,7 @@ print(EVENT)
 CLASS = '(CLASS [1-4]|Open|Decathlon|Heptathlon)'
 DISQUALIFICATION = 'DQ( {1,4}(((IAAF|ISSA) )?RULE)? [0-9]{1,4}(\.[0-9]{1,2})?[A-Za-z]?)'
 RANK = ' *([0-9]{1,3}|\-{1,4})'
-COMP_NUM = '# {1,4}([0-9]{1,4})'
+COMP_NUM = '(# {1,4}([0-9]{1,4}) *)'
 WORD = '[\w\'\.\-]+'
 ROUND = '((Flight|Heat|Section) *[0-9]+)? *(Preliminaries|Semi\-Finals|Finals) *(Wind: (\-?[0-9]\.[0-9]))?'
 PERSON = f'({WORD} {WORD})'
@@ -88,18 +89,18 @@ class LineParser:
             return None
 
 
-placing_parser = LineParser(' *RANK COMP_NUM PERSON {2,}SCHOOL {2,}MARK( {1,}WIND)?( {2,}(POINTS))?',
-                  lambda match:  {'Rank': match.group(1), 'Athlete': match.group(3), 'Team': match.group(4),
-                                  'Mark': match.group(9),
-                                  'Wind':match.group(19),
-                                  'Points': match.group(20)})
+placing_parser = LineParser(' *RANK COMP_NUM?PERSON {2,}SCHOOL {2,}MARK( {1,}WIND)?( {2,}(POINTS))?',
+                  lambda match:  {'Rank': match.group(1), 'Athlete': match.group(4), 'Team': match.group(5),
+                                  'Mark': match.group(10),
+                                  'Wind':match.group(20),
+                                  'Points': match.group(21)})
 
 relay_placing_parser = LineParser(' *RANK SCHOOL {4,}MARK( {2,8}POINTS)?',
                         lambda match: {'Rank': match.group(1), 'Team': match.group(2),
                                         'Mark': match.group(7), 'Points': match.group(15)})
 
-eventParser = LineParser('Event [0-9]{1,3} *GENDER [0-9]{1,2}\-[0-9]{1,2} EVENT *CLASS',
-                         lambda match: {'Gender': match.group(1), 'Event':match.group(2), 'Class': match.group(5).title()})
+eventParser = LineParser('Event [0-9]{1,3} *(Decathlon: #1 *)?GENDER [0-9]{1,2}\-[0-9]{1,2} EVENT *CLASS',
+                         lambda match: {'Gender': match.group(2), 'Event':match.group(3), 'Class': match.group(6).title()})
 
 relay_leg12_parser = LineParser(RELAY_LEG_12, lambda match: {'Leg1':trim(match.group(2)), 'Leg2':trim(match.group(4))})
 relay_leg34_parser = LineParser(RELAY_LEG_34, lambda match: {'Leg3':trim(match.group(2)), 'Leg4':trim(match.group(4))})
@@ -167,7 +168,7 @@ class ResultParser:
         data.Points = data.Points.fillna(0).astype(float)
         data.Team = data.Team.apply(lambda s: s.strip())
 
-        data['DQRule'] = data.Mark.apply(lambda mark: mark[3:].strip() if mark.startswith('DQ') else mark)
+        data['DQRule'] = data.Mark.apply(lambda mark: mark[3:].strip() if mark.startswith('DQ') else '')
         data['Mark'] = data.Mark.apply(lambda mark: 'DQ' if mark.startswith('DQ') else mark)
 
         # Decathlon & Heptathlon
@@ -175,6 +176,10 @@ class ResultParser:
         data.loc[dec_hep_cond, 'Event'] = data[dec_hep_cond].apply(lambda d: f'{d.Event} {d.Class}', axis=1)
         data.loc[dec_hep_cond, 'Points'] = 0
         data.loc[dec_hep_cond, 'Class'] = 'Open'
+
+        # We might be missing legs
+        if not 'Leg1' in data.columns.values:
+            data = data.reindex(columns=[*data.columns.tolist(), *LEGS], fill_value=0)
         data = data[COLS]
         return data
 
