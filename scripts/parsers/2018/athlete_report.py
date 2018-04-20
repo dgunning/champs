@@ -15,5 +15,5 @@ for team in teams:
 
 COLS = ['Gender','Team','Class','Athlete']
 athletes = athletes_records[COLS].drop_duplicates().sort_values(COLS)
-athletes.to_csv(f'{PATH}/school_reports/AthletesAtChamps2018.csv',index=False)
+athletes.to_csv(f'{PATH}/AthletesAtChamps2018.csv',index=False)
 print(athletes)
