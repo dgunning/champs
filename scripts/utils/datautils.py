@@ -28,7 +28,8 @@ def get_relays(records):
     for index, row in records[records.Event.isin(RELAYS)].iterrows():
         for leg in LEGS:
             relay_recs.append({'Rank':row['Rank'], 'Class':row['Class'],'Gender':row['Gender'],'Points':row['Points'],
-                               'Event':row['Event'], 'Round':row['Round'],'Mark':row['Mark'], 'Athlete': row[leg]})
+                               'Event':row['Event'], 'Round':row['Round'],'Mark':row['Mark'], 'Team':row['Team'],
+                               'Athlete': row[leg]})
     return pd.DataFrame(relay_recs)
 
 

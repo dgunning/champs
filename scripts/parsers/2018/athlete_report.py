@@ -17,3 +17,6 @@ COLS = ['Gender','Team','Class','Athlete']
 athletes = athletes_records[COLS].drop_duplicates().sort_values(COLS)
 athletes.to_csv(f'{PATH}/AthletesAtChamps2018.csv',index=False)
 print(athletes)
+
+relays =get_relays(champs)
+relays.to_csv(f'{PATH}/RelayAthletesAtChamps2018.csv',index=False)
